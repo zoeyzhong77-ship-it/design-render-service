@@ -1,22 +1,17 @@
 {
   "name": "design-render-service",
-  "version": "1.0.0",
-  "description": "Design AI Banner Render Service - Node.js + Playwright",
+  "version": "2.0.0",
+  "description": "Design AI Banner Render Service - Pure Node.js (No Browser)",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "node server.js",
-    "postinstall": "npx playwright install chromium --with-deps"
+    "start": "node server.js"
   },
-  "keywords": ["design", "render", "playwright", "banner"],
-  "author": "",
-  "license": "MIT",
   "engines": {
     "node": ">=18.0.0"
   },
   "dependencies": {
     "express": "^4.18.2",
-    "playwright": "^1.51.0",
-    "cors": "^2.8.5"
+    "cors": "^2.8.5",
+    "@napi-rs/image": "^1.6.0"
   }
 }
