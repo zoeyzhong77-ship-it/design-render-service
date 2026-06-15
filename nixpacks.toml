@@ -1,0 +1,15 @@
+# Nixpacks configuration for Railway
+# Install Playwright system dependencies
+
+[phases.setup]
+nixPkgs = ["glib", "nspr", "nss", "at-spi2-atk", "atk", "cairo", "cups", "dbus", "expat", "fontconfig", "freetype", "gdk-pixbuf", "gobject-introspection", "gtk3", "pango", "libdrm", "libxkbcommon", "mesa", "wayland"]
+aptPkgs = ["libgbm1", "libasound2"]
+
+[variables]
+NODE_ENV = 'production'
+
+[build]
+preBuild = ['npx playwright install chromium']
+
+[start]
+cmd = 'node server.js'
