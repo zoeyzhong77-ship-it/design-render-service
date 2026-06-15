@@ -8,6 +8,17 @@ const path = require('path');
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+// 确保静态文件目录存在
+const staticDir = path.join(__dirname, 'static');
+const htmlDir = path.join(staticDir, 'html');
+const imagesDir = path.join(staticDir, 'images');
+[staticDir, htmlDir, imagesDir].forEach(dir => {
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+    console.log(`📁 Created directory: ${dir}`);
+  }
+});
+
 // 中间件
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
