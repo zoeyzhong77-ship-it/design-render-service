@@ -1,0 +1,8 @@
+node_modules/
+*.log
+.env
+static/images/
+static/html/
+*.png
+*.html
+!.gitkeep
