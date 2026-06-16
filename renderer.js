@@ -1,139 +1,167 @@
 /**
- * 布局 JSON → HTML 渲染引擎
- * 将 layers 转成绝对定位 HTML
+ * 布局 JSON → HTML 渲染引擎（标准结构）
+ * 支持扁平字段结构：layer.x / layer.y / layer.width / layer.height
+ * 支持图层类型：rect / text / button / image
  */
 
-function layerToHtml(layer, canvasWidth, canvasHeight) {
-  const { id, type, geometry, style = {}, content = '', source = '', role = '' } = layer;
-  const { x = 0, y = 0, width = 0, height = 0 } = geometry || {};
-
-  let html = '';
-  const zIndex = style.zIndex !== undefined ? style.zIndex : 1;
-
-  if (type === 'shape' && role === 'background') {
-    // 背景图层
-    let bgStyle = `position:absolute;left:${x}px;top:${y}px;width:${width}px;height:${height}px;z-index:${zIndex};`;
-    
-    if (style.backgroundColor) {
-      bgStyle += `background-color:${style.backgroundColor};`;
-    }
-    if (style.backgroundGradient) {
-      bgStyle += `background:${style.backgroundGradient};`;
-    }
-    
-    html = `<div id="${id}" class="layer-bg" style="${bgStyle}"></div>`;
-  } 
-  else if (type === 'image' && role === 'background') {
-    // 背景图片图层
-    let imgStyle = `position:absolute;left:${x}px;top:${y}px;width:${width}px;height:${height}px;z-index:${zIndex};`;
-    imgStyle += `object-fit:cover;`;
-    
-    html = `<img id="${id}" class="layer-bg-image" src="${source}" style="${imgStyle}" />`;
-    
-    // 遮罩层
-    if (style.overlay) {
-      const overlayColor = style.overlay.color || 'rgba(0,0,0,0.3)';
-      html += `<div class="layer-overlay" style="position:absolute;left:${x}px;top:${y}px;width:${width}px;height:${height}px;background:${overlayColor};z-index:${zIndex + 1};"></div>`;
-    }
-  }
-  else if (type === 'text') {
-    // 文本图层
-    let textStyle = `position:absolute;left:${x}px;top:${y}px;width:${width}px;height:${height}px;z-index:${zIndex};`;
-    
-    if (style.fontSize) textStyle += `font-size:${style.fontSize}px;`;
-    if (style.fontWeight) textStyle += `font-weight:${style.fontWeight};`;
-    if (style.color) textStyle += `color:${style.color};`;
-    if (style.fontFamily) textStyle += `font-family:${style.fontFamily};`;
-    if (style.textAlign) textStyle += `text-align:${style.textAlign};`;
-    if (style.lineHeight) textStyle += `line-height:${style.lineHeight}px;`;
-    
-    const escapedContent = content
-      .replace(/&/g, '&amp;')
-      .replace(/</g, '&lt;')
-      .replace(/>/g, '&gt;')
-      .replace(/"/g, '&quot;');
-    
-    html = `<div id="${id}" class="layer-text" style="${textStyle}">${escapedContent}</div>`;
-  }
-  else if (type === 'button') {
-    // 按钮图层
-    let btnStyle = `position:absolute;left:${x}px;top:${y}px;width:${width}px;height:${height}px;z-index:${zIndex};`;
-    btnStyle += `display:flex;align-items:center;justify-content:center;`;
-    btnStyle += `cursor:pointer;`;
-    
-    if (style.backgroundColor) btnStyle += `background-color:${style.backgroundColor};`;
-    if (style.borderRadius) btnStyle += `border-radius:${style.borderRadius}px;`;
-    if (style.color) btnStyle += `color:${style.color};`;
-    if (style.fontSize) btnStyle += `font-size:${style.fontSize}px;`;
-    if (style.fontWeight) btnStyle += `font-weight:${style.fontWeight};`;
-    
-    html = `<div id="${id}" class="layer-button" style="${btnStyle}">${content}</div>`;
-  }
-  else if (type === 'shape' && role !== 'background') {
-    // 普通形状图层
-    let shapeStyle = `position:absolute;left:${x}px;top:${y}px;width:${width}px;height:${height}px;z-index:${zIndex};`;
-    
-    if (style.backgroundColor) shapeStyle += `background-color:${style.backgroundColor};`;
-    if (style.borderRadius) shapeStyle += `border-radius:${style.borderRadius}px;`;
-    
-    html = `<div id="${id}" class="layer-shape" style="${shapeStyle}"></div>`;
-  }
-
-  return html;
+function escapeHtml(value = "") {
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;");
 }
 
-function renderLayoutToHtml(layoutJson) {
-  const layout = typeof layoutJson === 'string' ? JSON.parse(layoutJson) : layoutJson;
-  const { canvas = {}, layers = [], background = {} } = layout;
-  const { width = 600, height = 200, colorMode = 'RGB' } = canvas;
+function toNum(value, fallback = 0) {
+  const n = Number(value);
+  return Number.isFinite(n) ? n : fallback;
+}
 
-  // 生成 HTML
-  let layersHtml = '';
-  layers.forEach(layer => {
-    layersHtml += layerToHtml(layer, width, height) + '\n    ';
-  });
+function getBox(layer) {
+  const g = layer.geometry || {};
+  return {
+    x: toNum(layer.x ?? g.x, 0),
+    y: toNum(layer.y ?? g.y, 0),
+    width: toNum(layer.width ?? g.width, 100),
+    height: toNum(layer.height ?? g.height, 40)
+  };
+}
 
-  // 背景样式
-  let canvasStyle = `position:relative;width:${width}px;height:${height}px;overflow:hidden;background:`;
-  
-  if (background && background.type === 'image') {
-    canvasStyle += `url('${background.source}') center/cover no-repeat;`;
-  } else if (background && background.type === 'solid') {
-    canvasStyle += `${background.color || '#ffffff'};`;
-  } else {
-    canvasStyle += `#ffffff;`;
+function getBackground(layer) {
+  if (layer.background) return layer.background;
+
+  const fill = layer.fill;
+  if (!fill) return "transparent";
+
+  if (typeof fill === "string") return fill;
+  if (fill.color) return fill.color;
+
+  if (fill.type === "linear_gradient" && Array.isArray(fill.stops)) {
+    const angle = fill.angle || 135;
+    const stops = fill.stops.map((s) => {
+      const color = s.color || "#2563EB";
+      const offset = typeof s.offset === "number" ? Math.round(s.offset * 100) : 0;
+      return `${color} ${offset}%`;
+    });
+    return `linear-gradient(${angle}deg, ${stops.join(", ")})`;
   }
 
-  const html = `<!DOCTYPE html>
+  return "transparent";
+}
+
+function renderLayer(layer) {
+  const box = getBox(layer);
+  const zIndex = toNum(layer.zIndex ?? layer.z_index, 1);
+  const opacity = layer.opacity == null ? 1 : Number(layer.opacity);
+
+  const baseStyle = [
+    "position:absolute",
+    `left:${box.x}px`,
+    `top:${box.y}px`,
+    `width:${box.width}px`,
+    `height:${box.height}px`,
+    `z-index:${zIndex}`,
+    `opacity:${opacity}`,
+    "box-sizing:border-box"
+  ].join(";");
+
+  // rect / shape
+  if (layer.type === "rect" || (layer.type === "shape" && layer.shape_type === "rect")) {
+    const background = getBackground(layer);
+    const radius = toNum(layer.borderRadius ?? layer.border_radius, 0);
+    return `<div style="${baseStyle};background:${background};border-radius:${radius}px;"></div>`;
+  }
+
+  // text
+  if (layer.type === "text") {
+    const text = escapeHtml(layer.text || "");
+    const fontSize = toNum(layer.fontSize ?? layer.font_size, 24);
+    const fontWeight = layer.fontWeight ?? layer.font_weight ?? 400;
+    const color = layer.color || "#FFFFFF";
+    const lineHeight = layer.lineHeight || layer.line_height || 1.25;
+    const textAlign = layer.textAlign || layer.text_align || "left";
+
+    const justifyContent = textAlign === "center" ? "center" : textAlign === "right" ? "flex-end" : "flex-start";
+
+    return `<div style="${baseStyle};font-size:${fontSize}px;font-weight:${fontWeight};color:${color};line-height:${lineHeight};text-align:${textAlign};display:flex;align-items:center;justify-content:${justifyContent};word-break:break-word;white-space:normal;padding:0 8px;">${text}</div>`;
+  }
+
+  // button
+  if (layer.type === "button") {
+    const text = escapeHtml(layer.text || "");
+    const fontSize = toNum(layer.fontSize ?? layer.font_size, 16);
+    const fontWeight = layer.fontWeight ?? layer.font_weight ?? 600;
+    const background = layer.background || layer.fill || "#FFFFFF";
+    const color = layer.color || "#2563EB";
+    const radius = toNum(layer.borderRadius ?? layer.border_radius, 20);
+
+    return `<div style="${baseStyle};background:${background};color:${color};border-radius:${radius}px;font-size:${fontSize}px;font-weight:${fontWeight};display:flex;align-items:center;justify-content:center;cursor:pointer;">${text}</div>`;
+  }
+
+  // image
+  if (layer.type === "image") {
+    const src = layer.source || layer.src || layer.url || "";
+    if (!src) return "";
+    const fit = layer.fit || "cover";
+    return `<img src="${escapeHtml(src)}" style="${baseStyle};object-fit:${fit};display:block;" />`;
+  }
+
+  return "";
+}
+
+function buildHtmlFromLayout(layout) {
+  const canvas = layout.canvas || {};
+  const width = toNum(canvas.width, 600);
+  const height = toNum(canvas.height, 300);
+  const layers = Array.isArray(layout.layers) ? layout.layers : [];
+
+  const layerHtml = layers
+    .slice()
+    .sort((a, b) => toNum(a.zIndex ?? a.z_index, 0) - toNum(b.zIndex ?? b.z_index, 0))
+    .map(renderLayer)
+    .join("\n    ");
+
+  return `<!DOCTYPE html>
 <html>
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=${width}, initial-scale=1">
-  <title>Design Render</title>
+  <meta charset="UTF-8" />
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { margin: 0; padding: 0; background: #f0f0f0; }
-    .render-canvas {
-      ${canvasStyle}
-      margin: 0 auto;
-    }
-    .layer-text {
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: ${width}px;
+      height: ${height}px;
       overflow: hidden;
-      word-wrap: break-word;
+      background: transparent;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
     }
-    .layer-button {
-      user-select: none;
+    #canvas {
+      position: relative;
+      width: ${width}px;
+      height: ${height}px;
+      overflow: hidden;
+      background: transparent;
     }
   </style>
 </head>
 <body>
-  <div class="render-canvas" style="${canvasStyle}">
-    ${layersHtml}
+  <div id="canvas">
+    ${layerHtml}
   </div>
 </body>
 </html>`;
+}
 
+/**
+ * 兼容旧接口：返回 { html, width, height }
+ */
+function renderLayoutToHtml(layoutJson) {
+  const layout = typeof layoutJson === "string" ? JSON.parse(layoutJson) : layoutJson;
+  const canvas = layout.canvas || {};
+  const width = toNum(canvas.width, 600);
+  const height = toNum(canvas.height, 300);
+  const html = buildHtmlFromLayout(layout);
   return { html, width, height };
 }
 
-module.exports = { renderLayoutToHtml, layerToHtml };
+module.exports = { renderLayoutToHtml, buildHtmlFromLayout, renderLayer };
