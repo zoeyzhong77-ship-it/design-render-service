@@ -74,7 +74,7 @@ function renderLayer(layer) {
 
   // text
   if (layer.type === "text") {
-    const text = escapeHtml(layer.text || "");
+    const text = escapeHtml(layer.text || layer.content || "");
     const fontSize = toNum(layer.fontSize ?? layer.font_size, 24);
     const fontWeight = layer.fontWeight ?? layer.font_weight ?? 400;
     const color = layer.color || "#FFFFFF";
@@ -88,7 +88,7 @@ function renderLayer(layer) {
 
   // button
   if (layer.type === "button") {
-    const text = escapeHtml(layer.text || "");
+    const text = escapeHtml(layer.text || layer.content || "");
     const fontSize = toNum(layer.fontSize ?? layer.font_size, 16);
     const fontWeight = layer.fontWeight ?? layer.font_weight ?? 600;
     const background = layer.background || layer.fill || "#FFFFFF";
@@ -133,7 +133,7 @@ function buildHtmlFromLayout(layout) {
       height: ${height}px;
       overflow: hidden;
       background: transparent;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", "WenQuanYi Micro Hei", "Noto Sans SC", Arial, sans-serif;
     }
     #canvas {
       position: relative;

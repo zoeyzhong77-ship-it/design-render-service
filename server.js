@@ -91,7 +91,7 @@ function renderLayerHtml(layer) {
 
   // text 文字
   if (layer.type === "text") {
-    const text = escapeHtml(layer.text || "");
+    const text = escapeHtml(layer.text || layer.content || "");
     const fontSize = toNum(layer.fontSize ?? layer.font_size, 24);
     const fontWeight = layer.fontWeight ?? layer.font_weight ?? 400;
     const color = layer.color || "#FFFFFF";
@@ -104,7 +104,7 @@ function renderLayerHtml(layer) {
 
   // button 按钮
   if (layer.type === "button") {
-    const text = escapeHtml(layer.text || "");
+    const text = escapeHtml(layer.text || layer.content || "");
     const fontSize = toNum(layer.fontSize ?? layer.font_size, 16);
     const fontWeight = layer.fontWeight ?? layer.font_weight ?? 600;
     const bg = layer.background || layer.fill || "#FFFFFF";
@@ -145,7 +145,7 @@ function buildHtmlFromLayout(layout) {
 <head>
   <meta charset="UTF-8" />
   <style>
-    html, body { margin:0; padding:0; width:${width}px; height:${height}px; overflow:hidden; background:transparent; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",Arial,sans-serif; }
+    html, body { margin:0; padding:0; width:${width}px; height:${height}px; overflow:hidden; background:transparent; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei","WenQuanYi Micro Hei","Noto Sans SC",Arial,sans-serif; }
     #canvas { position:relative; width:${width}px; height:${height}px; overflow:hidden; background:transparent; }
   </style>
 </head>
@@ -214,7 +214,7 @@ function layerToSvg(layer, defs) {
   }
 
   if (type === "text") {
-    const text = escapeXml(layer.text || "");
+    const text = escapeXml(layer.text || layer.content || "");
     const fontSize = toNum(layer.fontSize ?? layer.font_size, 24);
     const fontWeight = layer.fontWeight ?? layer.font_weight ?? 400;
     const color = layer.color || "#FFFFFF";
@@ -227,11 +227,11 @@ function layerToSvg(layer, defs) {
     const anchor = textAlign === "center" ? "middle" : textAlign === "right" ? "end" : "start";
     const textY = box.y + box.height / 2 + fontSize / 3;
 
-    return `<text x="${textX}" y="${textY}" font-size="${fontSize}" fill="${color}" font-weight="${fontWeight}" font-family="-apple-system,'PingFang SC','Microsoft YaHei',Arial,sans-serif" text-anchor="${anchor}">${text}</text>`;
+    return `<text x="${textX}" y="${textY}" font-size="${fontSize}" fill="${color}" font-weight="${fontWeight}" font-family="-apple-system,'PingFang SC','Microsoft YaHei','WenQuanYi Micro Hei','Noto Sans SC',Arial,sans-serif" text-anchor="${anchor}">${text}</text>`;
   }
 
   if (type === "button") {
-    const text = escapeXml(layer.text || "");
+    const text = escapeXml(layer.text || layer.content || "");
     const fontSize = toNum(layer.fontSize ?? layer.font_size, 16);
     const fontWeight = layer.fontWeight ?? layer.font_weight ?? 600;
     const bgColor = layer.background || layer.fill || "#FFFFFF";
@@ -240,7 +240,7 @@ function layerToSvg(layer, defs) {
 
     return `<g>
       <rect x="${box.x}" y="${box.y}" width="${box.width}" height="${box.height}" rx="${radius}" ry="${radius}" fill="${bgColor}" />
-      <text x="${box.x + box.width / 2}" y="${box.y + box.height / 2 + fontSize / 3}" font-size="${fontSize}" fill="${textColor}" font-weight="${fontWeight}" font-family="-apple-system,Arial,sans-serif" text-anchor="middle">${text}</text>
+      <text x="${box.x + box.width / 2}" y="${box.y + box.height / 2 + fontSize / 3}" font-size="${fontSize}" fill="${textColor}" font-weight="${fontWeight}" font-family="-apple-system,'PingFang SC','Microsoft YaHei','WenQuanYi Micro Hei','Noto Sans SC',Arial,sans-serif" text-anchor="middle">${text}</text>
     </g>`;
   }
 
