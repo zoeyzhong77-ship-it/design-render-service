@@ -20,7 +20,6 @@ const imagesDir = path.join(staticDir, 'images');
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
 app.use('/static', express.static(path.join(__dirname, 'static')));
-app.use('/fonts', express.static(path.join(__dirname, 'fonts')));
 
 // ============================================================
 // 布局 JSON → HTML 渲染引擎（支持标准结构）
@@ -146,27 +145,7 @@ function buildHtmlFromLayout(layout) {
 <head>
   <meta charset="UTF-8" />
   <style>
-    @font-face {
-      font-family: "Source Han Sans CN";
-      src: url("/fonts/SourceHanSansCN-Regular.otf") format("opentype");
-      font-weight: 400;
-    }
-    @font-face {
-      font-family: "Source Han Sans CN";
-      src: url("/fonts/SourceHanSansCN-Bold.otf") format("opentype");
-      font-weight: 700;
-    }
-    @font-face {
-      font-family: "Source Han Serif CN";
-      src: url("/fonts/SourceHanSerifCN-Regular.otf") format("opentype");
-      font-weight: 400;
-    }
-    @font-face {
-      font-family: "Source Han Serif CN";
-      src: url("/fonts/SourceHanSerifCN-Bold.otf") format("opentype");
-      font-weight: 700;
-    }
-    html, body { margin:0; padding:0; width:${width}px; height:${height}px; overflow:hidden; background:transparent; font-family:"Source Han Sans CN","PingFang SC","Microsoft YaHei",Arial,sans-serif; }
+    html, body { margin:0; padding:0; width:${width}px; height:${height}px; overflow:hidden; background:transparent; font-family:"Noto Sans CJK SC","PingFang SC","Microsoft YaHei",Arial,sans-serif; }
     #canvas { position:relative; width:${width}px; height:${height}px; overflow:hidden; background:transparent; }
   </style>
 </head>
@@ -248,7 +227,7 @@ function layerToSvg(layer, defs) {
     const anchor = textAlign === "center" ? "middle" : textAlign === "right" ? "end" : "start";
     const textY = box.y + box.height / 2 + fontSize / 3;
 
-    return `<text x="${textX}" y="${textY}" font-size="${fontSize}" fill="${color}" font-weight="${fontWeight}" font-family="'Source Han Sans CN','WenQuanYi Micro Hei','Noto Sans CJK SC',sans-serif" text-anchor="${anchor}">${text}</text>`;
+    return `<text x="${textX}" y="${textY}" font-size="${fontSize}" fill="${color}" font-weight="${fontWeight}" font-family="'Noto Sans CJK SC','PingFang SC','Microsoft YaHei',sans-serif" text-anchor="${anchor}">${text}</text>`;
   }
 
   if (type === "button") {
@@ -261,7 +240,7 @@ function layerToSvg(layer, defs) {
 
     return `<g>
       <rect x="${box.x}" y="${box.y}" width="${box.width}" height="${box.height}" rx="${radius}" ry="${radius}" fill="${bgColor}" />
-      <text x="${box.x + box.width / 2}" y="${box.y + box.height / 2 + fontSize / 3}" font-size="${fontSize}" fill="${textColor}" font-weight="${fontWeight}" font-family="'Source Han Sans CN','WenQuanYi Micro Hei','Noto Sans CJK SC',sans-serif" text-anchor="middle">${text}</text>
+      <text x="${box.x + box.width / 2}" y="${box.y + box.height / 2 + fontSize / 3}" font-size="${fontSize}" fill="${textColor}" font-weight="${fontWeight}" font-family="'Noto Sans CJK SC','PingFang SC','Microsoft YaHei',sans-serif" text-anchor="middle">${text}</text>
     </g>`;
   }
 
