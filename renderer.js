@@ -126,6 +126,26 @@ function buildHtmlFromLayout(layout) {
 <head>
   <meta charset="UTF-8" />
   <style>
+    @font-face {
+      font-family: "Source Han Sans CN";
+      src: url("/fonts/SourceHanSansCN-Regular.otf") format("opentype");
+      font-weight: 400;
+    }
+    @font-face {
+      font-family: "Source Han Sans CN";
+      src: url("/fonts/SourceHanSansCN-Bold.otf") format("opentype");
+      font-weight: 700;
+    }
+    @font-face {
+      font-family: "Source Han Serif CN";
+      src: url("/fonts/SourceHanSerifCN-Regular.otf") format("opentype");
+      font-weight: 400;
+    }
+    @font-face {
+      font-family: "Source Han Serif CN";
+      src: url("/fonts/SourceHanSerifCN-Bold.otf") format("opentype");
+      font-weight: 700;
+    }
     html, body {
       margin: 0;
       padding: 0;
@@ -133,7 +153,7 @@ function buildHtmlFromLayout(layout) {
       height: ${height}px;
       overflow: hidden;
       background: transparent;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", "WenQuanYi Micro Hei", "Noto Sans SC", Arial, sans-serif;
+      font-family: "Source Han Sans CN", "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
     }
     #canvas {
       position: relative;
